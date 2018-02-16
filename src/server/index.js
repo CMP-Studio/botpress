@@ -23,7 +23,8 @@ module.exports = bp => {
 
   async function start(createServer) {
     const app = express()
-    const server = (createServer || http.createServer)(app)
+    const createServerFromApp = createServer || http.createServer
+    const server = createServerFromApp(app)
     const port = bp.botfile.port
 
     await serveApi(app)
