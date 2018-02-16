@@ -6,7 +6,6 @@ import Static from './static'
 import Api from './api'
 
 module.exports = bp => {
-
   async function serveApi(app) {
     const api = Api(bp)
     return api.install(app)
@@ -22,9 +21,10 @@ module.exports = bp => {
     return staticStuff.install(app)
   }
 
-  async function start() {
+  async function start(createServer) {
     const app = express()
-    const server = http.createServer(app)
+    const createServerFromApp = createServer || http.createServer
+    const server = createServerFromApp(app)
     const port = bp.botfile.port
 
     await serveApi(app)

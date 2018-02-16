@@ -93,7 +93,7 @@ class botpress {
    * 3. inject security functions
    * 4. load modules
    */
-  async _start() {
+  async _start(createServerFn) {
     this.stats.track('bot', 'started')
 
     if (!this.interval) {
@@ -192,7 +192,7 @@ class botpress {
     notifications._bindEvents()
 
     const server = createServer(this)
-    server.start().then(() => {
+    server.start(createServerFn).then(res => {
       events.emit('ready')
       for (let mod of _.values(loadedModules)) {
         mod.handlers.ready && mod.handlers.ready(this, mod.configuration, createHelpers)
@@ -238,7 +238,7 @@ class botpress {
     })
   }
 
-  start() {
+  start(createServerFn) {
     if (cluster.isMaster) {
       let firstWorkerHasStartedAlready = false
       const receiveMessageFromWorker = message => {
@@ -265,7 +265,7 @@ class botpress {
 
     if (cluster.isWorker) {
       process.send({ workerStatus: 'starting' })
-      this._start()
+      this._start(createServerFn)
     }
   }
 
