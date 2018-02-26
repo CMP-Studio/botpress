@@ -21,18 +21,17 @@ module.exports = bp => {
     return staticStuff.install(app)
   }
 
-  async function start(createServer) {
-    const app = express()
-    const createServerFromApp = createServer || http.createServer
-    const server = createServerFromApp(app)
+  async function start(_app, _server) {
+    const app = _app || express()
+    const server = _server || http.createServer(app)
     const port = bp.botfile.port
 
     await serveApi(app)
-    await serveSocket(server)
     await serveStatic(app)
 
     return new Promise(resolve => {
-      server.listen(port, () => resolve())
+      console.log('Server starting....')
+      resolve()
     })
   }
 

@@ -93,7 +93,7 @@ class botpress {
    * 3. inject security functions
    * 4. load modules
    */
-  async _start(createServerFn) {
+  async _start(_app, _server) {
     this.stats.track('bot', 'started')
 
     if (!this.interval) {
@@ -192,7 +192,7 @@ class botpress {
     notifications._bindEvents()
 
     const server = createServer(this)
-    server.start(createServerFn).then(res => {
+    server.start(_app, _server).then(res => {
       events.emit('ready')
       for (let mod of _.values(loadedModules)) {
         mod.handlers.ready && mod.handlers.ready(this, mod.configuration, createHelpers)
@@ -238,35 +238,9 @@ class botpress {
     })
   }
 
-  start(createServerFn) {
-    if (cluster.isMaster) {
-      let firstWorkerHasStartedAlready = false
-      const receiveMessageFromWorker = message => {
-        if (message && message.workerStatus === 'starting') {
-          if (!firstWorkerHasStartedAlready) {
-            firstWorkerHasStartedAlready = true
-          } else {
-            print('info', '*** restarted worker process ***')
-            this.stats.track('bot', 'restarted')
-          }
-        }
-      }
-
-      cluster.on('exit', (worker, code /* , signal */) => {
-        if (code === RESTART_EXIT_CODE) {
-          cluster.fork().on('message', receiveMessageFromWorker)
-        } else {
-          process.exit(code)
-        }
-      })
-
-      cluster.fork().on('message', receiveMessageFromWorker)
-    }
-
-    if (cluster.isWorker) {
-      process.send({ workerStatus: 'starting' })
-      this._start(createServerFn)
-    }
+  start(_app, _server) {
+    // process.send({ workerStatus: 'starting' })
+    this._start(_app, _server)
   }
 
   restart(interval = 0) {
